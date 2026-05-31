@@ -28,10 +28,6 @@ struct FComboStepData
 {
 	GENERATED_BODY()
 
-	/** 재생할 애니메이션 몽타주 — 없으면 타이머로 모션 시뮬레이션 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo|Animation")
-	TObjectPtr<UAnimMontage> Montage = nullptr;
-
 	/** 다음 콤보 입력 수용 창 시작 (초) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo|Timing", meta = (ClampMin = "0.0"))
 	float ComboWindowOpenTime = 0.533f;
@@ -154,7 +150,11 @@ protected:
 	// =========================================================
 	// 콤보 시스템
 	// =========================================================
-	/** 3단 콤보 데이터 (에디터에서 몽타주 할당) */
+	/** 3단 콤보에 사용할 단일 몽타주 (에디터에서 AM_ComboAttack 할당) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Combo")
+	TObjectPtr<UAnimMontage> ComboMontage;
+
+	/** 3단 콤보 데이터 배열 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Combo")
 	TArray<FComboStepData> ComboSteps;
 

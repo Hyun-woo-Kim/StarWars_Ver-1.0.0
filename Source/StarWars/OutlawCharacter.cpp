@@ -226,25 +226,32 @@ void AOutlawCharacter::StartCombo(int32 Index)
 	GetWorldTimerManager().ClearTimer(ComboWindowCloseTimer);
 	GetWorldTimerManager().ClearTimer(ComboResetTimer);
 
-	// 기획서 기준 fallback 모션 시간
-	static const float MotionDurations[] = { 1.0f, 1.167f, 1.333f };
-	float MotionDuration = MotionDurations[FMath::Clamp(Index, 0, 2)];
+	// 각 섹션 이름 (몽타주 에디터의 섹션명과 일치해야 함)
+	static const FName SectionNames[] = { TEXT("N1"), TEXT("N2"), TEXT("N3") };
 
-	// 몽타주 재생
+	// 기획서 기준 fallback 모션 시간 (몽타주 없을 때 타이머로 시뮬레이션)
+	static const float MotionDurations[] = { 1.0f, 1.167f, 1.333f };
+
 	bool bMontageStarted = false;
-	if (Step.Montage)
+	if (ComboMontage)
 	{
 		if (UAnimInstance* AI = GetMesh()->GetAnimInstance())
 		{
-			float Duration = AI->Montage_Play(Step.Montage);
-			if (Duration > 0.f)
+			if (Index == 0)
 			{
-				bMontageStarted = true;
-				MotionDuration  = Duration;
-
-				FOnMontageEnded EndDelegate;
-				EndDelegate.BindUObject(this, &AOutlawCharacter::OnAttackMontageEnded);
-				AI->Montage_SetEndDelegate(EndDelegate, Step.Montage);
+				float Duration = AI->Montage_Play(ComboMontage);
+				if (Duration > 0.f)
+				{
+					bMontageStarted = true;
+					FOnMontageEnded EndDelegate;
+					EndDelegate.BindUObject(this, &AOutlawCharacter::OnAttackMontageEnded);
+					AI->Montage_SetEndDelegate(EndDelegate, ComboMontage);
+				}
+			}
+			else
+			{
+				AI->Montage_JumpToSection(SectionNames[Index], ComboMontage);
+				bMontageStarted = AI->Montage_IsPlaying(ComboMontage);
 			}
 		}
 	}
@@ -253,7 +260,8 @@ void AOutlawCharacter::StartCombo(int32 Index)
 	{
 		// 몽타주 없을 때 — 타이머로 모션 종료 시뮬레이션
 		GetWorldTimerManager().SetTimer(
-			ComboResetTimer, this, &AOutlawCharacter::ResetCombo, MotionDuration, false);
+			ComboResetTimer, this, &AOutlawCharacter::ResetCombo,
+			MotionDurations[FMath::Clamp(Index, 0, 2)], false);
 	}
 
 	// 콤보 입력 창 타이머 (N3 제외)
@@ -327,9 +335,7 @@ void AOutlawCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 {
 	if (!bIsAttacking) return;
 
-	// 이미 다음 콤보로 전환된 경우 무시 (다른 몽타주 재생 중)
-	if (ComboSteps.IsValidIndex(CurrentComboIndex) &&
-		ComboSteps[CurrentComboIndex].Montage == Montage)
+	if (Montage == ComboMontage)
 	{
 		ResetCombo();
 	}
