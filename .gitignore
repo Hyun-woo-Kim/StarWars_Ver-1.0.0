@@ -1,0 +1,36 @@
+# Unreal Engine 빌드 산출물 (재생성 가능, 용량 큼)
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Visual Studio / VS Code 생성 파일
+.vs/
+.vscode/compileCommands_*/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# 사용자별 설정
+*.userprefs
+*.user
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# 플러그인 빌드 산출물 (소스는 유지)
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# 컨텐츠 빌드 캐시 (재생성 가능)
+Content/Collections/
+Content/__ExternalActors__/
+Content/__ExternalObjects__/
